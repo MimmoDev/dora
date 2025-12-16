@@ -316,12 +316,26 @@ class _AuthPageState extends State<AuthPage> {
           },
         );
 
-        // Il profilo verrà creato automaticamente al primo login
+        // Crea il profilo subito dopo la registrazione
+        final user = widget.authRepository.currentUser;
+        if (user != null) {
+          final newProfile = Profile(
+            id: user.id,
+            firstName: firstName.isNotEmpty ? firstName : null,
+            lastName: lastName.isNotEmpty ? lastName : null,
+            phone: phone.isNotEmpty ? phone : null,
+            role: 'user',
+            createdAt: DateTime.now().toUtc(),
+          );
+          await widget.profileRepository.upsertProfile(newProfile);
+          debugPrint('Profilo creato subito dopo registrazione per user: ${user.id}');
+        }
+
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Registrazione completata. Controlla la tua email per confermare, se richiesto.',
+              'Registrazione completata!',
             ),
           ),
         );
