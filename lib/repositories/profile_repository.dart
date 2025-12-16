@@ -16,7 +16,9 @@ class ProfileRepository {
   static const _collection = 'profiles';
 
   List<String> _perms(String userId) {
+    // Consenti lettura a tutti gli utenti autenticati, scrittura solo all'owner
     return [
+      'read("users")',
       'read("user:$userId")',
       'write("user:$userId")',
     ];
@@ -31,7 +33,7 @@ class ProfileRepository {
       );
       return Profile.fromMap(Map<String, dynamic>.from(doc.data));
     } on AppwriteException catch (e) {
-      if (e.code == 404) return null;
+      if (e.code == 404 || e.code == 401) return null;
       rethrow;
     }
   }
