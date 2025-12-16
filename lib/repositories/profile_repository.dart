@@ -26,14 +26,17 @@ class ProfileRepository {
   }
 
   Future<Profile?> fetchProfile(String id) async {
-    final res = await _databases.listDocuments(
-      databaseId: _dbId,
-      collectionId: _collection,
-      queries: [Query.equal('user_id', id)],
-    );
-    if (res.total == 0) return null;
-    final data = res.documents.first.data;
-    return Profile.fromMap(Map<String, dynamic>.from(data));
+    try {
+      final doc = await _databases.getDocument(
+        databaseId: _dbId,
+        collectionId: _collection,
+        documentId: id,
+      );
+      return Profile.fromMap(Map<String, dynamic>.from(doc.data));
+    } on AppwriteException catch (e) {
+      if (e.code == 404) return null;
+      rethrow;
+    }
   }
 
   Future<List<Profile>> fetchProfiles() async {
@@ -59,14 +62,18 @@ class ProfileRepository {
         data: data,
         permissions: _perms(profile.id),
       );
-    } catch (_) {
-      await _databases.updateDocument(
-        databaseId: _dbId,
-        collectionId: _collection,
-        documentId: docId,
-        data: data,
-        permissions: _perms(profile.id),
-      );
+    } on AppwriteException catch (e) {
+      if (e.code == 409) {
+        await _databases.updateDocument(
+          databaseId: _dbId,
+          collectionId: _collection,
+          documentId: docId,
+          data: data,
+          permissions: _perms(profile.id),
+        );
+      } else {
+        rethrow;
+      }
     }
     return profile;
   }
