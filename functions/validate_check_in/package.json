@@ -1,0 +1,8 @@
+{
+  "name": "validate-check-in",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {}
+}
+
