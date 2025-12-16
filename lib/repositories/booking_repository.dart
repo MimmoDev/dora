@@ -22,10 +22,10 @@ class BookingRepository {
   List<String> _perms(String userId) {
     final adminTeam = AppwriteService.instance.adminTeamId;
     return [
-      'read(user:$userId)',
-      'write(user:$userId)',
-      'read(team:$adminTeam)',
-      'write(team:$adminTeam)',
+      'read("user:$userId")',
+      'write("user:$userId")',
+      'read("team:$adminTeam")',
+      'write("team:$adminTeam")',
     ];
   }
 
