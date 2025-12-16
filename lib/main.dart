@@ -196,12 +196,13 @@ class _AuthGateState extends State<AuthGate> {
         }
 
         // Controlla se l'email è verificata
-        if (!session.user.emailVerified) {
-          return EmailVerificationPage(
-            authRepository: _authRepository,
-            user: session.user,
-          );
-        }
+        // TODO: Abilitare quando SMTP è configurato in Appwrite
+        // if (!session.user.emailVerified) {
+        //   return EmailVerificationPage(
+        //     authRepository: _authRepository,
+        //     user: session.user,
+        //   );
+        // }
 
         // Verifica e crea il profilo al primo login
         return FutureBuilder<Profile?>(
@@ -474,23 +475,21 @@ class _AuthPageState extends State<AuthPage> {
           debugPrint('Profilo creato subito dopo registrazione per user: ${user.id}');
 
           // Invia email di verifica
-          try {
-            await widget.authRepository.sendVerificationEmail(
-              Environment.verificationRedirectUrl,
-            );
-            debugPrint('Email di verifica inviata a: ${user.email}');
-          } catch (e) {
-            debugPrint('Errore invio email verifica: $e');
-          }
+          // TODO: Abilitare quando SMTP è configurato in Appwrite
+          // try {
+          //   await widget.authRepository.sendVerificationEmail(
+          //     Environment.verificationRedirectUrl,
+          //   );
+          //   debugPrint('Email di verifica inviata a: ${user.email}');
+          // } catch (e) {
+          //   debugPrint('Errore invio email verifica: $e');
+          // }
         }
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Registrazione completata! Controlla la tua email per verificare l\'account.',
-            ),
-            duration: Duration(seconds: 5),
+            content: Text('Registrazione completata!'),
           ),
         );
       }
