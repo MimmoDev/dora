@@ -195,6 +195,14 @@ class _AuthGateState extends State<AuthGate> {
           );
         }
 
+        // Controlla se l'email è verificata
+        if (!session.user.emailVerified) {
+          return EmailVerificationPage(
+            authRepository: _authRepository,
+            user: session.user,
+          );
+        }
+
         // Verifica e crea il profilo al primo login
         return FutureBuilder<Profile?>(
           future: _ensureProfileExists(session.user),
@@ -241,6 +249,141 @@ class _AuthGateState extends State<AuthGate> {
           },
         );
       },
+    );
+  }
+}
+
+/// Pagina mostrata quando l'email non è ancora verificata
+class EmailVerificationPage extends StatefulWidget {
+  const EmailVerificationPage({
+    super.key,
+    required this.authRepository,
+    required this.user,
+  });
+
+  final AuthRepository authRepository;
+  final AppUser user;
+
+  @override
+  State<EmailVerificationPage> createState() => _EmailVerificationPageState();
+}
+
+class _EmailVerificationPageState extends State<EmailVerificationPage> {
+  bool _isResending = false;
+  bool _isChecking = false;
+
+  Future<void> _resendVerificationEmail() async {
+    setState(() => _isResending = true);
+    try {
+      await widget.authRepository.sendVerificationEmail(
+        Environment.verificationRedirectUrl,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email di verifica inviata! Controlla la tua casella.'),
+        ),
+      );
+    } on AppwriteException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Errore nell\'invio dell\'email')),
+      );
+    } finally {
+      if (mounted) setState(() => _isResending = false);
+    }
+  }
+
+  Future<void> _checkVerification() async {
+    setState(() => _isChecking = true);
+    try {
+      await widget.authRepository.refreshSession();
+    } finally {
+      if (mounted) setState(() => _isChecking = false);
+    }
+  }
+
+  Future<void> _signOut() async {
+    await widget.authRepository.signOut();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Verifica Email'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _signOut,
+            tooltip: 'Esci',
+          ),
+        ],
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.mark_email_unread_outlined,
+                  size: 80,
+                  color: Color(0xFF849a82),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Verifica la tua email',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Abbiamo inviato un\'email di verifica a:\n${widget.user.email}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Clicca sul link nell\'email per verificare il tuo account.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _isChecking ? null : _checkVerification,
+                    icon: _isChecking
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.refresh),
+                    label: const Text('Ho verificato, ricontrolla'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: _isResending ? null : _resendVerificationEmail,
+                  child: _isResending
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Non hai ricevuto l\'email? Invia di nuovo'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -329,14 +472,25 @@ class _AuthPageState extends State<AuthPage> {
           );
           await widget.profileRepository.upsertProfile(newProfile);
           debugPrint('Profilo creato subito dopo registrazione per user: ${user.id}');
+
+          // Invia email di verifica
+          try {
+            await widget.authRepository.sendVerificationEmail(
+              Environment.verificationRedirectUrl,
+            );
+            debugPrint('Email di verifica inviata a: ${user.email}');
+          } catch (e) {
+            debugPrint('Errore invio email verifica: $e');
+          }
         }
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Registrazione completata!',
+              'Registrazione completata! Controlla la tua email per verificare l\'account.',
             ),
+            duration: Duration(seconds: 5),
           ),
         );
       }

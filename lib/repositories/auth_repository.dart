@@ -6,9 +6,10 @@ import 'package:appwrite/models.dart' as models;
 import '../appwrite_service.dart';
 
 class AppUser {
-  const AppUser({required this.id, this.email});
+  const AppUser({required this.id, this.email, this.emailVerified = false});
   final String id;
   final String? email;
+  final bool emailVerified;
 }
 
 class AppSession {
@@ -44,6 +45,7 @@ class AuthRepository {
         user: AppUser(
           id: user.$id,
           email: user.email,
+          emailVerified: user.emailVerification,
         ),
       );
       _authStateController.add(AuthState(session: _currentSession));
@@ -80,6 +82,26 @@ class AuthRepository {
     await _account.deleteSessions();
     _currentSession = null;
     _authStateController.add(const AuthState(session: null));
+  }
+
+  /// Invia email di verifica all'utente corrente
+  /// [redirectUrl] è l'URL a cui l'utente viene reindirizzato dopo la verifica
+  Future<void> sendVerificationEmail(String redirectUrl) async {
+    await _account.createVerification(url: redirectUrl);
+  }
+
+  /// Completa la verifica email (chiamato dopo che l'utente clicca sul link)
+  Future<void> completeVerification({
+    required String userId,
+    required String secret,
+  }) async {
+    await _account.updateVerification(userId: userId, secret: secret);
+    await refreshSession();
+  }
+
+  /// Rinvia email di verifica
+  Future<void> resendVerificationEmail(String redirectUrl) async {
+    await _account.createVerification(url: redirectUrl);
   }
 }
 

@@ -11,5 +11,11 @@ class Environment {
 
   /// Team ID degli admin (usato per permessi documenti)
   static const String appwriteAdminTeamId = '6941972100137c456711';
+
+  /// URL di redirect per la verifica email
+  /// L'utente verrà reindirizzato qui dopo aver cliccato sul link di verifica
+  /// Può essere un deep link dell'app o una pagina web
+  static const String verificationRedirectUrl =
+      'https://appwrite.mimmodev.com/verify';
 }
 
