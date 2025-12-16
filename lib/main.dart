@@ -138,6 +138,13 @@ class _AuthGateState extends State<AuthGate> {
   final AuthRepository _authRepository = AuthRepository();
   final ProfileRepository _profileRepository = ProfileRepository();
 
+  @override
+  void initState() {
+    super.initState();
+    // Ripristina eventuale sessione esistente (Appwrite)
+    _authRepository.refreshSession();
+  }
+
   /// Verifica che il profilo esista, altrimenti lo crea
   Future<Profile?> _ensureProfileExists(AppUser user) async {
     try {
