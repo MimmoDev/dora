@@ -18,11 +18,8 @@ class AppointmentRepository {
   static const _collection = 'appointments';
 
   List<String> _permsForAppointment(String createdBy) {
-    final adminTeam = AppwriteService.instance.adminTeamId;
     return [
       'read("users")', // tutti autenticati possono leggere
-      'read("team:$adminTeam")',
-      'write("team:$adminTeam")',
       'read("user:$createdBy")',
       'write("user:$createdBy")', // opzionale per creatore
     ];

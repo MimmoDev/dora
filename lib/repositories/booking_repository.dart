@@ -20,12 +20,9 @@ class BookingRepository {
   static const _collection = 'bookings';
 
   List<String> _perms(String userId) {
-    final adminTeam = AppwriteService.instance.adminTeamId;
     return [
       'read("user:$userId")',
       'write("user:$userId")',
-      'read("team:$adminTeam")',
-      'write("team:$adminTeam")',
     ];
   }
 

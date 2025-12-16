@@ -19,12 +19,9 @@ class SubscriptionRepository {
   static const _collection = 'subscriptions';
 
   List<String> _perms(String userId) {
-    final adminTeam = AppwriteService.instance.adminTeamId;
     return [
       'read("user:$userId")',
       'write("user:$userId")',
-      'read("team:$adminTeam")',
-      'write("team:$adminTeam")',
     ];
   }
 
