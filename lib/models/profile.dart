@@ -41,8 +41,10 @@ class Profile {
   }
 
   factory Profile.fromMap(Map<String, dynamic> map) {
+    // In Appwrite, l'ID documento è in $id, ma salviamo anche user_id
+    final id = map['\$id'] as String? ?? map['user_id'] as String;
     return Profile(
-      id: map['id'] as String,
+      id: id,
       firstName: map['first_name'] as String?,
       lastName: map['last_name'] as String?,
       phone: map['phone'] as String?,
@@ -54,9 +56,10 @@ class Profile {
     );
   }
 
+  /// Converte in mappa per Appwrite (senza 'id', che è il documentId)
   Map<String, dynamic> toMap() {
-    final map = {
-      'id': id,
+    final map = <String, dynamic>{
+      'user_id': id,
       'first_name': firstName,
       'last_name': lastName,
       'phone': phone,

@@ -51,7 +51,7 @@ class ProfileRepository {
   Future<Profile> upsertProfile(Profile profile) async {
     // Usa user_id come documentId per coerenza con Supabase
     final docId = profile.id;
-    final data = profile.toMap()..['user_id'] = profile.id;
+    final data = profile.toMap(); // toMap() già include user_id
 
     try {
       await _databases.createDocument(
