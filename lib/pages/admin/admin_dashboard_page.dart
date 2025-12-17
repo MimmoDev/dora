@@ -97,7 +97,9 @@ class AdminDashboardPage extends StatelessWidget {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    const UsersManagementPage(),
+                                    UsersManagementPage(
+                                      authRepository: authRepository,
+                                    ),
                               ),
                             );
                           },

@@ -19,7 +19,10 @@ class SubscriptionRepository {
   static const _collection = 'subscriptions';
 
   List<String> _perms(String userId) {
+    // Permessi: owner può leggere/scrivere, tutti gli autenticati possono leggere (per admin)
     return [
+      'read("users")', // Tutti gli utenti autenticati possono leggere (admin)
+      'write("users")', // Tutti gli utenti autenticati possono scrivere (admin)
       'read("user:$userId")',
       'write("user:$userId")',
     ];

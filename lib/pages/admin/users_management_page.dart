@@ -3,11 +3,17 @@ import 'package:intl/intl.dart';
 
 import '../../models/profile.dart';
 import '../../models/subscription.dart';
+import '../../repositories/auth_repository.dart';
 import '../../repositories/profile_repository.dart';
 import '../../repositories/subscription_repository.dart';
 
 class UsersManagementPage extends StatefulWidget {
-  const UsersManagementPage({super.key});
+  const UsersManagementPage({
+    super.key,
+    required this.authRepository,
+  });
+
+  final AuthRepository authRepository;
 
   @override
   State<UsersManagementPage> createState() => _UsersManagementPageState();
@@ -143,6 +149,7 @@ class _UsersManagementPageState extends State<UsersManagementPage> {
                             user: user,
                             subscription: subscription,
                             onSubscriptionChanged: _loadUsers,
+                            authRepository: widget.authRepository,
                           );
                         },
                       ),
@@ -158,11 +165,13 @@ class _UserCard extends StatelessWidget {
     required this.user,
     required this.subscription,
     required this.onSubscriptionChanged,
+    required this.authRepository,
   });
 
   final Profile user;
   final Subscription? subscription;
   final VoidCallback onSubscriptionChanged;
+  final AuthRepository authRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -382,6 +391,7 @@ class _UserCard extends StatelessWidget {
         user: user,
         subscription: subscription,
         onChanged: onSubscriptionChanged,
+        authRepository: authRepository,
       ),
     );
   }
@@ -438,11 +448,13 @@ class _SubscriptionDialog extends StatefulWidget {
     required this.user,
     required this.subscription,
     required this.onChanged,
+    required this.authRepository,
   });
 
   final Profile user;
   final Subscription? subscription;
   final VoidCallback onChanged;
+  final AuthRepository authRepository;
 
   @override
   State<_SubscriptionDialog> createState() => _SubscriptionDialogState();
@@ -484,8 +496,7 @@ class _SubscriptionDialogState extends State<_SubscriptionDialog> {
       );
 
       // Ottieni l'ID dell'admin corrente
-      // TODO: usare current user da AuthRepository se serve audit
-      final adminId = null;
+      final adminId = widget.authRepository.currentUser?.id;
       if (adminId == null) {
         throw Exception('Admin non autenticato');
       }
